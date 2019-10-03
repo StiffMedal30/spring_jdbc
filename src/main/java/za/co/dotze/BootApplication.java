@@ -16,10 +16,10 @@ public class BootApplication {
                 "Spring-DataSource.xml"
         );
         final CustomerDao customerDao = (CustomerDao) context.getBean("customerDAO");
-        Customer customer = new Customer(3, "Christiaan", 28);
+        Customer customer = new Customer(1, "Christiaan", 28);
         customerDao.addCustomer(customer);
 
-        customer = customerDao.findCustomerById(1);
+        customer = customerDao.findCustomerById(4);
         System.out.println(customer.toString());
     }
 }

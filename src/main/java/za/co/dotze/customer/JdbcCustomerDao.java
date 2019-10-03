@@ -1,12 +1,12 @@
 package za.co.dotze.customer;
 
+import za.co.dotze.exception.MySqlException;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @Author - Christiaan Dotze <christiaan@dotze.co.za>
@@ -15,14 +15,14 @@ import java.util.List;
 public class JdbcCustomerDao implements CustomerDao {
 
     private DataSource dataSource;
-    private Connection connection = null;
     private PreparedStatement ps;
+    private Connection connection = null;
 
     public void setDataSource(final DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public void addCustomer(Customer customer) {
+    public void addCustomer(final Customer customer) {
         final String insertQuery = "INSERT INTO customer (id, name, age) VALUES (?, ?, ?)";
         try {
             connection = dataSource.getConnection();
@@ -33,13 +33,13 @@ public class JdbcCustomerDao implements CustomerDao {
             ps.execute();
             ps.close();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new MySqlException(e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }
@@ -47,13 +47,14 @@ public class JdbcCustomerDao implements CustomerDao {
 
     public Customer findCustomerById(final Integer id) {
         final String findQuery = "SELECT * FROM customer WHERE id = ?";
+        ResultSet resultSet = null;
         try {
             connection = dataSource.getConnection();
             ps = null;
             ps = connection.prepareStatement(findQuery);
             ps.setInt(1, id);
             Customer customer = null;
-            final ResultSet resultSet = ps.executeQuery();
+            resultSet = ps.executeQuery();
             if (resultSet.next()) {
                 customer = new Customer(
                         resultSet.getInt("id"),
@@ -61,17 +62,17 @@ public class JdbcCustomerDao implements CustomerDao {
                         resultSet.getInt("age")
                 );
             }
-            resultSet.close();
             ps.close();
+            resultSet.close();
             return customer;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new MySqlException(e);
         } finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }
